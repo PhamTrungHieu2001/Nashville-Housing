@@ -145,5 +145,38 @@ WHERE  (OwnerAddress IS NOT NULL)
 | 335 WIMPOLE DR, NASHVILLE  | 335 WIMPOLE DR       | NASHVILLE    | 335 WIMPOLE DR, NASHVILLE, TN  | 335 WIMPOLE DR      | NASHVILLE | TN         |
 
 ## 4. Change 'Y' and 'N' to 'Yes' and 'No' in the 'SoldAsVacant' column
+Method 1: Using CASE
+```sql
+UPDATE PortfolioProject.dbo.Housing
+SET SoldAsVacant = CASE 
+		WHEN SoldAsVacant = 'Y'
+			THEN 'Yes'
+		WHEN SoldAsVacant = 'N'
+			THEN 'No'
+		ELSE SoldAsVacant
+		END
+```
+Method 2: Using WHERE
+```sql
+UPDATE PortfolioProject.dbo.Housing
+SET          SoldAsVacant = 'Yes'
+WHERE  (SoldAsVacant = 'Y')
+
+UPDATE PortfolioProject.dbo.Housing
+SET          SoldAsVacant = 'No'
+WHERE  (SoldAsVacant = 'N')
+```
+View the result
+```sql
+SELECT SoldAsVacant, COUNT(SoldAsVacant) AS Num
+FROM     PortfolioProject.dbo.Housing
+GROUP BY SoldAsVacant;
+```
+| SoldAsVacant | Num   |
+|--------------|-------|
+| Yes          | 4669  |
+| No           | 51704 |
+
 ## 5. Remove duplicates
+
 ## 6. Remove unused columns
