@@ -86,10 +86,66 @@ FROM     PortfolioProject.dbo.Housing AS a INNER JOIN
 WHERE  (a.PropertyAddress IS NULL)
 ```
 
-
-
-
 ## 3. Breaking address into individual columns (Address, City, State)
+### 3.1. Breaking 'PropertyAddress' into 'PropertySplitAddress' and 'PropertyCity' using SUBSTRING()
+For example: "1808  FOX CHASE DR, GOODLETTSVILLE" => "1808  FOX CHASE DR", "GOODLETTSVILLE"
+```sql
+-- Create 2 new columns to save the property's address and city
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD PropertyCity NVARCHAR(255)
+
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD PropertySplitAddress NVARCHAR(255)
+
+-- Add data to the new columns
+UPDATE PortfolioProject.dbo.Housing
+SET          PropertyCity = SUBSTRING(PropertyAddress, CHARINDEX(',', PropertyAddress) + 2, LEN(PropertyAddress))
+
+UPDATE PortfolioProject.dbo.Housing
+SET          PropertySplitAddress = SUBSTRING(PropertyAddress, 1, CHARINDEX(',', PropertyAddress) - 1)
+```
+### 3.2. Breaking 'OwnerAddress' into 'OwnerSplitAddress', 'OwnerCity', and 'OwnerState' using PARSENAME()
+For example: "1808  FOX CHASE DR, GOODLETTSVILLE, TN" => "1808  FOX CHASE DR", "GOODLETTSVILLE", "TN"
+```sql 
+-- Create 3 new columns to save owners' address, city and state
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD OwnerSplitAddress NVARCHAR(255)
+
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD OwnerCity NVARCHAR(255)
+
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD OwnerState NVARCHAR(255)
+
+-- Add data to the new columns
+UPDATE PortfolioProject.dbo.Housing
+SET          OwnerSplitAddress = PARSENAME(REPLACE(OwnerAddress, ', ', '.'), 3)
+
+UPDATE PortfolioProject.dbo.Housing
+SET          OwnerCity = PARSENAME(REPLACE(OwnerAddress, ', ', '.'), 2)
+
+UPDATE PortfolioProject.dbo.Housing
+SET          OwnerState = PARSENAME(REPLACE(OwnerAddress, ', ', '.'), 1)
+```
+View result
+```sql
+SELECT PropertyAddress, PropertySplitAddress, OwnerAddress, OwnerSplitAddress, OwnerCity, OwnerState
+FROM     PortfolioProject.dbo.Housing
+WHERE  (OwnerAddress IS NOT NULL)
+```
+| PropertyAddress            | PropertySplitAddress | OwnerAddress                   | OwnerSplitAddress   | OwnerCity | OwnerState |
+|----------------------------|----------------------|--------------------------------|---------------------|-----------|------------|
+| 361 FLUSHING DR, NASHVILLE | 361 FLUSHING DR      | 361 FLUSHING DR, NASHVILLE, TN | 361 FLUSHING DR     | NASHVILLE | TN         |
+| 359 FLUSHING DR, NASHVILLE | 359 FLUSHING DR      | 359 FLUSHING DR, NASHVILLE, TN | 359 FLUSHING DR     | NASHVILLE | TN         |
+| 353 FLUSHING DR, NASHVILLE | 353 FLUSHING DR      | 353 FLUSHING DR, NASHVILLE, TN | 353 FLUSHING DR     | NASHVILLE | TN         |
+| 358 FLUSHING DR, NASHVILLE | 358 FLUSHING DR      | 358 FLUSHING DR, NASHVILLE, TN | 358 FLUSHING DR     | NASHVILLE | TN         |
+| 448 FOOTHILL DR, NASHVILLE | 448 FOOTHILL DR      | 448 FOOTHILL DR, NASHVILLE, TN | 448 FOOTHILL DR     | NASHVILLE | TN         |
+| 448 FOOTHILL DR, NASHVILLE | 448 FOOTHILL DR      | 448 FOOTHILL DR, NASHVILLE, TN | 448 FOOTHILL DR     | NASHVILLE | TN         |
+| 508 FOOTHILL DR, NASHVILLE | 508 FOOTHILL DR      | 508 FOOTHILL DR, NASHVILLE, TN | 508 FOOTHILL DR     | NASHVILLE | TN         |
+| 501 FOOTHILL DR, NASHVILLE | 501 FOOTHILL DR      | 501 FOOTHILL DR, NASHVILLE, TN | 501 FOOTHILL DR     | NASHVILLE | TN         |
+| 507 SHADY OAK DR, NASHVILLE| 507 SHADY OAK DR     | 507 SHADY OAK DR, NASHVILLE, TN| 507 SHADY OAK DR    | NASHVILLE | TN         |
+| 335 WIMPOLE DR, NASHVILLE  | 335 WIMPOLE DR       | 335 WIMPOLE DR, NASHVILLE, TN  | 335 WIMPOLE DR      | NASHVILLE | TN         |
+
 ## 4. Change 'Y' and 'N' to 'Yes' and 'No' in the 'SoldAsVacant' column
 ## 5. Remove duplicates
 ## 6. Remove unused columns
