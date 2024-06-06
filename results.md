@@ -178,5 +178,43 @@ GROUP BY SoldAsVacant;
 | No           | 51704 |
 
 ## 5. Remove duplicates
+1. Create a CTE that counts the number of duplicates
+2. Delete duplicate records that have the same 'ParcelID', 'SaleDate', 'SalePrice', and 'LegalReference'
+```sql
+WITH duplicates
+AS (
+	SELECT *
+		,ROW_NUMBER() OVER (
+			PARTITION BY ParcelID
+			,SaleDate
+			,SalePrice
+			,LegalReference ORDER BY UniqueID
+			) AS row_num
+	FROM PortfolioProject.dbo.Housing
+	)
+
+DELETE FROM duplicates
+WHERE  (row_num > 1)
+```
 
 ## 6. Remove unused columns
+```sql
+ALTER TABLE PortfolioProject.dbo.Housing
+DROP COLUMN OwnerAddress,
+	PropertyAddress
+
+SELECT * 
+FROM     PortfolioProject.dbo.Housing
+```
+| UniqueID | ParcelID        | SaleDate   | SalePrice | LegalReference   | SoldAsVacant | PropertyCity | PropertySplitAddress | OwnerSplitAddress | OwnerCity | OwnerState |
+|----------|------------------|------------|-----------|------------------|--------------|--------------|----------------------|-------------------|-----------|------------|
+| 7975     | 069 04 0 002.00  | 2013-09-06 | 30000     | 20130909-0094625 | No           | NASHVILLE    | 3806 FAIRVIEW DR     | 3806 FAIRVIEW DR  | NASHVILLE | TN         |
+| 22701    | 069 04 0 003.00  | 2014-10-29 | 30000     | 20141104-0101893 | No           | NASHVILLE    | 3804 FAIRVIEW DR     | 3804 FAIRVIEW DR  | NASHVILLE | TN         |
+| 26206    | 069 04 0 006.00  | 2015-01-30 | 63300     | 20150204-0010485 | No           | NASHVILLE    | 4005 CEDAR CIR       | 4005 CEDAR CIR    | NASHVILLE | TN         |
+| 51953    | 069 04 0 012.00  | 2016-07-15 | 140000    | 20160718-0073753 | No           | NASHVILLE    | 4008 CEDAR CIR       | 4008 CEDAR CIR    | NASHVILLE | TN         |
+| 33007    | 069 04 0 014.00  | 2015-06-22 | 83500     | 20150625-0061179 | No           | NASHVILLE    | 4002 CEDAR CIR       | 4002 CEDAR CIR    | NASHVILLE | TN         |
+| 6983     | 069 04 0 022.00  | 2013-08-16 | 10000     | 20130819-0086794 | No           | NASHVILLE    | 4013 MEADOW RD       | 4013 MEADOW RD    | NASHVILLE | TN         |
+| 2041     | 069 04 0 026.00  | 2013-04-05 | 82000     | 20130410-0035461 | No           | NASHVILLE    | 4006 MEADOW RD       | 4006 MEADOW RD    | NASHVILLE | TN         |
+| 40580    | 069 04 0 048.00  | 2015-11-02 | 65000     | 20151109-0113634 | No           | NASHVILLE    | 3721 FAIRVIEW DR     | 3721 FAIRVIEW DR  | NASHVILLE | TN         |
+| 238      | 069 04 0 065.00  | 2013-01-22 | 52500     | 20130123-0007440 | No           | NASHVILLE    | 3602 W HAMILTON RD   | 3602 W HAMILTON RD| NASHVILLE | TN         |
+| 41913    | 069 04 0 065.00  | 2015-12-08 | 65500     | 20151210-0124354 | No           | NASHVILLE    | 3602 W HAMILTON RD   | 3602 W HAMILTON RD| NASHVILLE | TN         |
