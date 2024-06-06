@@ -42,6 +42,41 @@ FROM     PortfolioProject.dbo.Housing
 
 ## 2. Populate 'PropertyAddress' field
 If one property doesn't have an address, find another one with the same 'ParcelID' and copy its address.
+
+<table>
+<tr><th>Before</th><th>After</th></tr>
+  
+<tr><td>
+  
+| ParcelID       | PropertyAddress               |
+|----------------|-------------------------------|
+| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
+| 093 08 0 054.00| _NULL_                        |
+| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
+| 107 13 0 107.00| 1205 THOMPSON PL, NASHVILLE   |
+| 107 13 0 107.00| _NULL_                        |
+| 108 07 0A 026.00| _NULL_                       |
+| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
+| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
+| 109 04 0A 080.00| 2537 JANALYN TRCE, HERMITAGE |
+| 109 04 0A 080.00| _NULL_                       |
+
+</td><td>
+
+| ParcelID       | PropertyAddress               |
+|----------------|-------------------------------|
+| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
+| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
+| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
+| 107 13 0 107.00| 1205 THOMPSON PL, NASHVILLE   |
+| 107 13 0 107.00| 1205 THOMPSON PL, NASHVILLE   |
+| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
+| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
+| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
+| 109 04 0A 080.00| 2537 JANALYN TRCE, HERMITAGE |
+| 109 04 0A 080.00| 2537 JANALYN TRCE, HERMITAGE |
+
+</td></tr> </table>
 ```sql
 UPDATE a
 SET          a.PropertyAddress = ISNULL(a.PropertyAddress, b.PropertyAddress)
@@ -53,19 +88,6 @@ SELECT ParcelID, PropertyAddress
 FROM     PortfolioProject.dbo.Housing
 WHERE  (PropertyAddress IS NULL)
 ```
-
-| ParcelID       | PropertyAddress               |
-|----------------|-------------------------------|
-| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
-| 093 08 0 054.00| _NULL_                          |
-| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
-| 107 13 0 107.00| 1205 THOMPSON PL, NASHVILLE   |
-| 107 13 0 107.00| _NULL_                          |
-| 108 07 0A 026.00| _NULL_                          |
-| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
-| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
-| 109 04 0A 080.00| 2537 JANALYN TRCE, HERMITAGE |
-| 109 04 0A 080.00| _NULL_                          |
 
 
 
