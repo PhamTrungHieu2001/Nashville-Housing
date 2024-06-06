@@ -1,130 +1,123 @@
--- CLEANING DATA
-
-select * from PortfolioProject.dbo.Housing
+-- VIEW DATA
+SELECT * 
+FROM     PortfolioProject.dbo.Housing
 
 ----------------------------------------------------------------------------------------------------------------
--- Standardize Date Format
+-- 1. STANDARDIZE DATE FORMAT
 --  April 9, 2013 => 2013-04-09
  
--- change data type
-alter table PortfolioProject.dbo.Housing
-alter column SaleDate date
+ALTER TABLE PortfolioProject.dbo.Housing
+ALTER COLUMN SaleDate DATE
 
-select SaleDate
-from PortfolioProject.dbo.Housing
-
-----------------------------------------------------------------------------------------------------------------
--- Populate Property Address data using Parcel ID
-
---select a.ParcelID, a.PropertyAddress, b.ParcelID, b.PropertyAddress 
---from PortfolioProject.dbo.Housing a
---join PortfolioProject.dbo.Housing b
---	on a.ParcelID = b.ParcelID
---	and a.[UniqueID ] <> b.[UniqueID ]
---where a.PropertyAddress is null
-
--- using self join to fill PropertyAddress that have the same ParcelID
-
-update a
-set a.PropertyAddress = ISNULL(a.PropertyAddress, b.PropertyAddress)
-from PortfolioProject.dbo.Housing a
-join PortfolioProject.dbo.Housing b
-	on a.ParcelID = b.ParcelID
-	and a.[UniqueID ] <> b.[UniqueID ]
-where a.PropertyAddress is null
-
-select ParcelID, PropertyAddress from PortfolioProject.dbo.Housing 
-where PropertyAddress is null
-
+SELECT SaleDate
+FROM     PortfolioProject.dbo.Housing
 
 ----------------------------------------------------------------------------------------------------------------
--- Breaking Addressing into individual columns (Address, City, State)
+-- 2. POPULATE PROPERTY ADDRESS DATA
+-- Using self join to fill the address of properties that have the same ParcelID
 
--- breaking PropertyAddress into Address and City using substring
-select substring(PropertyAddress, charindex(',', PropertyAddress)+2, len(PropertyAddress)-charindex(',', PropertyAddress)),  PropertyAddress
-from PortfolioProject.dbo.Housing
+UPDATE a
+SET          a.PropertyAddress = ISNULL(a.PropertyAddress, b.PropertyAddress)
+FROM     PortfolioProject.dbo.Housing AS a INNER JOIN
+                  PortfolioProject.dbo.Housing AS b ON a.ParcelID = b.ParcelID AND a.[UniqueID ] <> b.[UniqueID ] 
+WHERE  (a.PropertyAddress IS NULL)
 
--- create new columns
-alter table PortfolioProject.dbo.Housing
-add PropertyCity nvarchar(255)
+SELECT ParcelID, PropertyAddress
+FROM     PortfolioProject.dbo.Housing
+WHERE  (PropertyAddress IS NULL)
 
-alter table PortfolioProject.dbo.Housing
-add PropertySplitAdress nvarchar(255)
+----------------------------------------------------------------------------------------------------------------
+-- 3. BREAKING ADDRESS INTO INDIVIDUAL COLUMNS (ADDRESS, CITY, STATE)
 
--- add city & address to the new columns
-update PortfolioProject.dbo.Housing
-set PropertyCity = substring(PropertyAddress, charindex(',', PropertyAddress)+2, len(PropertyAddress))
+-- 3.1. Breaking 'PropertyAddress' into 'PropertySplitAddress' and 'PropertyCity' using SUBSTRING()
+-- "1808  FOX CHASE DR, GOODLETTSVILLE" => "1808  FOX CHASE DR", "GOODLETTSVILLE"
 
-update PortfolioProject.dbo.Housing
-set PropertySplitAdress = substring(PropertyAddress, 1, charindex(',', PropertyAddress)-1)
+-- Create new columns
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD PropertyCity NVARCHAR(255)
 
-select PropertyAddress, PropertySplitAdress, PropertyCity from PortfolioProject.dbo.Housing
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD PropertySplitAddress NVARCHAR(255)
 
--- breaking OwnerAddress into Address, City, and State using Parsename()
-select OwnerAddress, PARSENAME(replace(OwnerAddress, ', ', '.'), 1)
-from PortfolioProject.dbo.Housing
+-- Add data to the new columns
+UPDATE PortfolioProject.dbo.Housing
+SET          PropertyCity = SUBSTRING(PropertyAddress, CHARINDEX(',', PropertyAddress) + 2, LEN(PropertyAddress))
+
+UPDATE PortfolioProject.dbo.Housing
+SET          PropertySplitAddress = SUBSTRING(PropertyAddress, 1, CHARINDEX(',', PropertyAddress) - 1)
+
+-- 3.2. Breaking 'OwnerAddress' into 'OwnerSplitAddress', 'OwnerCity', and 'OwnerState' using PARSENAME()
+-- "1808  FOX CHASE DR, GOODLETTSVILLE, TN" => "1808  FOX CHASE DR", "GOODLETTSVILLE", "TN"
  
--- create new columns to save owners' address, city and state
-alter table PortfolioProject.dbo.Housing
-add OwnerSplitAdress nvarchar(255)
+-- Create new columns to save owners' address, city and state
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD OwnerSplitAddress NVARCHAR(255)
 
-alter table PortfolioProject.dbo.Housing
-add OwnerCity nvarchar(255)
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD OwnerCity NVARCHAR(255)
 
-alter table PortfolioProject.dbo.Housing
-add OwnerState nvarchar(255)
+ALTER TABLE PortfolioProject.dbo.Housing 
+ADD OwnerState NVARCHAR(255)
 
--- add values to those columns
-update PortfolioProject.dbo.Housing
-set OwnerSplitAdress = PARSENAME(replace(OwnerAddress, ', ', '.'), 3)
+-- Add data to the new columns
+UPDATE PortfolioProject.dbo.Housing
+SET          OwnerSplitAddress = PARSENAME(REPLACE(OwnerAddress, ', ', '.'), 3)
 
-update PortfolioProject.dbo.Housing
-set OwnerCity = PARSENAME(replace(OwnerAddress, ', ', '.'), 2)
+UPDATE PortfolioProject.dbo.Housing
+SET          OwnerCity = PARSENAME(REPLACE(OwnerAddress, ', ', '.'), 2)
 
-update PortfolioProject.dbo.Housing
-set OwnerState = PARSENAME(replace(OwnerAddress, ', ', '.'), 1)
-
-select OwnerAddress, OwnerSplitAdress, OwnerCity, OwnerState
-from PortfolioProject.dbo.Housing
+UPDATE PortfolioProject.dbo.Housing
+SET          OwnerState = PARSENAME(REPLACE(OwnerAddress, ', ', '.'), 1)
 
 ----------------------------------------------------------------------------------------------------------------
--- Change Y and N to Yes and No in "Sold as Vacant" field
+-- 4. CHANGE 'Y' AND 'N' TO 'YES' AND 'NO' IN THE "SOLD AS VACANT" FIELD
 
 -- Method 1
-update PortfolioProject.dbo.Housing
-set SoldAsVacant = case 
-	when SoldAsVacant = 'Y' then 'Yes'
-	when SoldAsVacant = 'N' then 'No'
-	else SoldAsVacant
-	end
+UPDATE PortfolioProject.dbo.Housing
+SET SoldAsVacant = CASE 
+		WHEN SoldAsVacant = 'Y'
+			THEN 'Yes'
+		WHEN SoldAsVacant = 'N'
+			THEN 'No'
+		ELSE SoldAsVacant
+		END
 
 -- Method 2
-update PortfolioProject.dbo.Housing
-set SoldAsVacant = 'Yes' where SoldAsVacant = 'Y'
+UPDATE PortfolioProject.dbo.Housing
+SET          SoldAsVacant = 'Yes'
+WHERE  (SoldAsVacant = 'Y')
 
-update PortfolioProject.dbo.Housing
-set SoldAsVacant = 'No' where SoldAsVacant = 'N'
+UPDATE PortfolioProject.dbo.Housing
+SET          SoldAsVacant = 'No'
+WHERE  (SoldAsVacant = 'N')
 
-select distinct(SoldAsVacant), count(SoldAsVacant) 
-from PortfolioProject.dbo.Housing
-group by SoldAsVacant;
+SELECT DISTINCT SoldAsVacant, COUNT(SoldAsVacant) AS Expr1
+FROM     PortfolioProject.dbo.Housing
+GROUP BY SoldAsVacant;
+----------------------------------------------------------------------------------------------------------------
+-- 5. REMOVE DUPLICATES
+-- Create a CTE that counts the number of duplicates	
+WITH duplicates
+AS (
+	SELECT *
+		,ROW_NUMBER() OVER (
+			PARTITION BY ParcelID
+			,SaleDate
+			,SalePrice
+			,LegalReference ORDER BY UniqueID
+			) AS row_num
+	FROM PortfolioProject.dbo.Housing
+	)
+
+-- Delete duplicate records that have the same ParcelID, SaleDate, SalePrice, and LegalReference
+DELETE FROM duplicates
+WHERE  (row_num > 1)
 
 ----------------------------------------------------------------------------------------------------------------
--- Remove duplicates
+-- 6. REMOVE UNUSUED COLUMNS 
 
-with duplicates as (
-select *, 
-ROW_NUMBER() over (partition by ParcelID, SaleDate, SalePrice, LegalReference order by UniqueID) as row_num
-from PortfolioProject.dbo.Housing
-)
+ALTER TABLE PortfolioProject.dbo.Housing
+DROP COLUMN OwnerAddress,
+	PropertyAddress,
+	TaxDistrict
 
--- delete duplicate records that have the same ParcelID, SaleDate, SalePrice, and LegalReference
-delete from duplicates
-where row_num > 1
-
-
-----------------------------------------------------------------------------------------------------------------
--- Remove unusued columns
-
-alter table PortfolioProject.dbo.Housing
-drop column OwnerAddress, PropertyAddress, TaxDistrict
