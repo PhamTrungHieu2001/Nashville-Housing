@@ -20,15 +20,14 @@ The database schema consists of the following table:
 
 | Column       | Type    | Description                      |
 |--------------|---------|----------------------------------|
-| iso_code     | NVARCHAR(255) | ISO code of the country |
-| continent     | NVARCHAR(255) | Continent of the country |
-| location     | NVARCHAR(255) | Name of the country |
-| date     | DATETIME | Date of the report |
-| population     | FLOAT | Population of the country |
-| total_cases     | FLOAT | Total number of cases |
-| new_cases     | FLOAT | Number of new cases |
-| total_deaths     | NVARCHAR(255) | Total number of deaths |
-| new_deaths     | NVARCHAR(255) | Number of new deaths |
+| UniqueID    | FLOAT | ID of the deal |
+| ParcelID     | NVARCHAR(255) | ID of the land |
+| PropertyAddress  | NVARCHAR(255) | Address of the property |
+| SaleDate     | DATE | Date of the deal |
+| SalePrice     | FLOAT | Price of the property |
+| LegalReference     | NVARCHAR(255) | Legal reference of the deal |
+| SoldAsVacant     | NVARCHAR(255) | If the property is sold with vacant possession |
+| OwnerAddress     | NVARCHAR(255) | Address of the owner (seller) |
 
 ## Contributing
 
