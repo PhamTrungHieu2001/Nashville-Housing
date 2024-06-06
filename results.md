@@ -17,3 +17,60 @@ FROM     PortfolioProject.dbo.Housing
 | 19804    | 007 14 0 002.00| 2005 SADIE LN, GOODLETTSVILLE          | August 28, 2014  | 171000    | 20140903-0080214   | No           | 2005 SADIE LN, GOODLETTSVILLE, TN             |
 | 54583    | 007 14 0 024.00| 1917 GRACELAND DR, GOODLETTSVILLE      | September 27, 2016| 262000    | 20161005-0105441   | No           | 1917 GRACELAND DR, GOODLETTSVILLE, TN         |
 | 36500    | 007 14 0 026.00| 1428 SPRINGFIELD HWY, GOODLETTSVILLE   | August 14, 2015  | 285000    | 20150819-0083440   | No           | 1428 SPRINGFIELD HWY, GOODLETTSVILLE, TN      |
+
+## 1. Standardize date format
+Change the date format from "April 9, 2013" to "2013-04-09"
+```sql
+ALTER TABLE PortfolioProject.dbo.Housing
+ALTER COLUMN SaleDate DATE
+
+SELECT SaleDate
+FROM     PortfolioProject.dbo.Housing
+```
+| SaleDate   |
+|------------|
+| 2013-09-06 |
+| 2014-10-29 |
+| 2015-01-30 |
+| 2016-07-15 |
+| 2015-06-22 |
+| 2013-08-16 |
+| 2013-04-05 |
+| 2015-11-02 |
+| 2013-01-22 |
+| 2015-12-08 |
+
+## 2. Populate 'PropertyAddress' field
+If one property doesn't have an address, find another one with the same 'ParcelID' and copy its address.
+```sql
+UPDATE a
+SET          a.PropertyAddress = ISNULL(a.PropertyAddress, b.PropertyAddress)
+FROM     PortfolioProject.dbo.Housing AS a INNER JOIN
+                  PortfolioProject.dbo.Housing AS b ON a.ParcelID = b.ParcelID AND a.[UniqueID ] <> b.[UniqueID ] 
+WHERE  (a.PropertyAddress IS NULL)
+
+SELECT ParcelID, PropertyAddress
+FROM     PortfolioProject.dbo.Housing
+WHERE  (PropertyAddress IS NULL)
+```
+
+| ParcelID       | PropertyAddress               |
+|----------------|-------------------------------|
+| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
+| 093 08 0 054.00| NULL                          |
+| 093 08 0 054.00| 700 GLENVIEW DR, NASHVILLE    |
+| 107 13 0 107.00| 1205 THOMPSON PL, NASHVILLE   |
+| 107 13 0 107.00| NULL                          |
+| 108 07 0A 026.00| NULL                          |
+| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
+| 108 07 0A 026.00| 908 PATIO DR, NASHVILLE      |
+| 109 04 0A 080.00| 2537 JANALYN TRCE, HERMITAGE |
+| 109 04 0A 080.00| NULL                          |
+
+
+
+
+## 3. Breaking address into individual columns (Address, City, State)
+## 4. Change 'Y' and 'N' to 'Yes' and 'No' in the 'SoldAsVacant' column
+## 5. Remove duplicates
+## 6. Remove unused columns
