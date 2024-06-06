@@ -44,7 +44,7 @@ FROM     PortfolioProject.dbo.Housing
 If one property doesn't have an address, find another one with the same 'ParcelID' and copy its address.
 
 <table>
-<tr><th>_BEFORE_</th><th>_AFTER_</th></tr>
+<tr><th>BEFORE</th><th>AFTER</th></tr>
   
 <tr><td>
   
@@ -77,16 +77,13 @@ If one property doesn't have an address, find another one with the same 'ParcelI
 | 109 04 0A 080.00| 2537 JANALYN TRCE, HERMITAGE |
 
 </td></tr> </table>
+
 ```sql
 UPDATE a
 SET          a.PropertyAddress = ISNULL(a.PropertyAddress, b.PropertyAddress)
 FROM     PortfolioProject.dbo.Housing AS a INNER JOIN
                   PortfolioProject.dbo.Housing AS b ON a.ParcelID = b.ParcelID AND a.[UniqueID ] <> b.[UniqueID ] 
 WHERE  (a.PropertyAddress IS NULL)
-
-SELECT ParcelID, PropertyAddress
-FROM     PortfolioProject.dbo.Housing
-WHERE  (PropertyAddress IS NULL)
 ```
 
 
