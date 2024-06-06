@@ -44,7 +44,7 @@ FROM     PortfolioProject.dbo.Housing
 If one property doesn't have an address, find another one with the same 'ParcelID' and copy its address.
 
 <table>
-<tr><th>BEFORE</th><th>AFTER</th></tr>
+<tr><th>_BEFORE_</th><th>_AFTER_</th></tr>
   
 <tr><td>
   
