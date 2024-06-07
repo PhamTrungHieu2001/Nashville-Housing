@@ -178,8 +178,8 @@ GROUP BY SoldAsVacant;
 | No           | 51704 |
 
 ## 5. Remove duplicates
-1. Create a CTE that counts the number of duplicates
-2. Delete duplicate records that have the same 'ParcelID', 'SaleDate', 'SalePrice', and 'LegalReference'
+1. Create a CTE that increases the row number of a record if it has the same 'ParcelID', 'SaleDate', 'SalePrice', and 'LegalReference' as another record
+2. Delete duplicate records with 'row_num' > 1
 ```sql
 WITH duplicates
 AS (
